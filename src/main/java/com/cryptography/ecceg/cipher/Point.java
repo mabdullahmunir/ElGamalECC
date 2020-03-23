@@ -19,6 +19,11 @@ public class Point {
         this.y = BigInteger.valueOf(y);
     }
 
+    Point(BigInteger x, BigInteger y) {
+        this.x = x;
+        this.y = y;
+    }
+
     @Override
     public boolean equals(Object p) {
         if (p instanceof Point) {
@@ -31,5 +36,15 @@ public class Point {
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    public String toString() {
+
+        return "X: " +
+                x.toString() +
+                '\t' +
+                "Y: " +
+                y.toString() +
+                '\n';
     }
 }
