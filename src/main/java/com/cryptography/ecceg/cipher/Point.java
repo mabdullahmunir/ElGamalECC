@@ -39,12 +39,6 @@ public class Point {
     }
 
     public String toString() {
-
-        return "X: " +
-                x.toString() +
-                '\t' +
-                "Y: " +
-                y.toString() +
-                '\n';
+        return String.format("(%s, %s)", x.toString(), y.toString());
     }
 }

@@ -3,9 +3,12 @@ package com.cryptography.ecceg.cipher;
 import lombok.Data;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class EllipticCurve {
+    private static final BigInteger MINUS_ONE = BigInteger.valueOf(-1);
     private static final BigInteger TWO = BigInteger.valueOf(2);
     private static final BigInteger THREE = BigInteger.valueOf(3);
 
@@ -17,6 +20,12 @@ public class EllipticCurve {
         this.a = BigInteger.valueOf(1);
         this.b = BigInteger.valueOf(6);
         this.p = BigInteger.valueOf(11);
+    }
+
+    EllipticCurve(long a, long b, long p) {
+        this.a = BigInteger.valueOf(a);
+        this.b = BigInteger.valueOf(b);
+        this.p = BigInteger.valueOf(p);
     }
 
     public Point addPoint(Point p1, Point p2) {
@@ -86,27 +95,60 @@ public class EllipticCurve {
         return g.mod(this.p);
     }
 
-    public boolean isInCurve(int x) {
-        // TODO
+    public BigInteger computeY(BigInteger x) {
+        for (BigInteger i = BigInteger.ONE; i.compareTo(this.p) < 0; i = i.add(BigInteger.ONE)) {
+            BigInteger m1 = x.pow(3).add(x.multiply(this.a)).add(this.b).mod(this.p);
+            BigInteger res = i.pow(2).subtract(m1).mod(this.p);
+
+            if (res.equals(BigInteger.ZERO) && x.gcd(i).equals(BigInteger.ONE)) {
+                return i;
+            }
+        }
+
+        return MINUS_ONE;
+    }
+
+    public boolean isPointInCurve(Point p) {
+//        if ()
         return true;
     }
 
+    public Point messageToPoint(BigInteger msg, BigInteger k) {
+        BigInteger m = msg.multiply(k);
+        for (BigInteger i = BigInteger.ONE; i.compareTo(k) < 0; i = i.add(BigInteger.ONE)) {
+            BigInteger x = m.add(i);
+            BigInteger y = this.computeY(x);
+            if (!y.equals(MINUS_ONE)) {
+                return new Point(x, y);
+            }
+        }
+
+        return new Point(MINUS_ONE, MINUS_ONE);
+    }
+
+    public BigInteger pointToMessage(Point p, BigInteger k) {
+        return p.getX().subtract(BigInteger.ONE).divide(k);
+    }
+
+    public List<Point> generateListPoint() {
+        List<Point> result = new ArrayList<>();
+
+        for (BigInteger x = BigInteger.ONE; x.compareTo(p) < 0; x = x.add(BigInteger.ONE)) {
+            BigInteger y = this.computeY(x);
+            if (!y.equals(MINUS_ONE)) {
+                result.add(new Point(x, y));
+            }
+        }
+
+        return result;
+    }
+
     public static void main(String[] args) {
-        EllipticCurve ec = new EllipticCurve();
-        Point p1 = new Point(2, 4);
-        Point p2 = new Point(5, 9);
-        Point p3 = ec.addPoint(p1, p2);
-        Point p4 = ec.doublePoint(p1);
-        Point p5 = ec.minusPoint(p3, p2);
+        // Generate list point, for basePoint
+        EllipticCurve ec = new EllipticCurve(-1, 188, 65537);
 
-        System.out.print(p3);
-        System.out.print(p4);
-        System.out.print(p5);
-
-        for (long i=1; i<15; i++) {
-            Point p6 = ec.multiplyPoint(p1, i);
-
-            System.out.print(p6);
+        for (Point p1: ec.generateListPoint()) {
+            System.out.print(p1);
         }
     }
 }
